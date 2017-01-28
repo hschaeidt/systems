@@ -1,5 +1,19 @@
-before_script:
-  - curl https://nixos.org/nix/install | sh
-  - nix-env -iA nixpkgs.nixops
-  - nixops create ./servers/probitc-conf/cx10-hetzner-probitc.nix ./servers/probitc-conf/probitc.nix -d probitc
-  - nixops deploy -d probitc
+cache:
+  paths:
+    - .nixops/
+
+stages:
+  - build
+  - deploy
+
+build:
+  script:
+    - nixops create ./servers/probitc-conf/cx10-hetzner-probitc.nix ./servers/probitc-conf/probitc.nix -d probitc
+    - nixops list
+  stage: build
+
+deploy:
+  script:
+    - nixops create ./servers/probitc-conf/cx10-hetzner-probitc.nix ./servers/probitc-conf/probitc.nix -d probitc
+    - nixops deploy -d probitc
+  stage: deploy
