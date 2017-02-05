@@ -3,6 +3,15 @@ cache:
     - .nixops/
 
 stages:
+image: nixos/nix:1.11
+
+before_script:
+  - nix-env -iA nixpkgs.nixops
+
+cache:
+  paths:
+    - .nixops/
+
   - build
   - deploy
 
