@@ -1,6 +1,3 @@
-#
-# See also https://gist.github.com/fadenb/d627fa9f2292fd8db7e5
-#
 { config, pkgs, ... }:
 
 {
@@ -31,12 +28,6 @@
   nixpkgs = {
     config = {
       allowUnfree = true;
-      chromium = {
-        # enableWideVine = true; #Netflix :/
-      };
-      firefox = {
-        # enableAdobeFlash = true; #Netflix :/
-      };
     };
   };
 
@@ -196,9 +187,6 @@
     iptables
     pass
     borgbackup
-
-    # games
-    # steam
   ];
 
   # backup-all service collects all user modified data
