@@ -193,7 +193,7 @@
   # the backup service is started once per hour by a systemd timer declared below
   #
   # > The root ssh key is registered on the target in the for the backup user.
-  #   @see repo file `servers/probitc-conf/probitc.nix`   
+  #   @see repo file `servers/probitc-conf/probitc.nix`
   # > Following environment variables are set in the `.config/bash/environment`
   #   export BORG_REPOSITORY='user@host:root@hostname.local'
   #   export BORG_PASSPHRASE='some secret passphrase'
@@ -211,14 +211,17 @@
       # Backup all system customized files including users home folders
       ${pkgs.borgbackup}/bin/borg create -v --stats \
         $BORG_REPOSITORY::'{hostname}-{now:%Y-%m-%d_%H-%M}' \
-        /root \
-        /home \
-        /etc/nixos \
-        /etc/wpa_supplicant.conf \
+        / \
         --exclude '/home/*/.cache' \
         --exclude '/home/*/.compose-cache' \
-        --exclude 're:^/home/.*/node_modules/'
-      
+        --exclude 're:^/home/.*/node_modules/' \
+        --exclude '/dev' \
+        --exclude '/nix' \
+        --exclude '/tmp' \
+        --exclude '/mnt' \
+        --exclude '/proc' \
+        --exclude '/sys'
+
       # Use the `prune` subcommand to maintain 24 hourly, 7 daily, 4 weekly and 6 monthly
       ${pkgs.borgbackup}/bin/borg prune -v --list $BORG_REPOSITORY --prefix '{hostname}-' \
         --keep-hourly=24 --keep-daily=7 --keep-weekly=4 --keep-monthly=6
@@ -235,7 +238,7 @@
 
   # Per user backup service
   # To enable for the active user `systemctl --user enable backup`
-  systemd.user.services.backup = { 
+  systemd.user.services.backup = {
     description = "Backup the user %i";
     path = [ pkgs.borgbackup pkgs.openssh ];
     script = ''
@@ -245,7 +248,7 @@
           $REPOSITORY::'{hostname}-{now:%Y-%m-%d_%H-%M}' \
           /home/%i                                       \
           --exclude '/home/%i/.cache'                    \
-          --exclude '/home/%i/.compose-cache' 
+          --exclude '/home/%i/.compose-cache'
 
         ${pkgs.borgbackup}/bin/borg prune -v --list $REPOSITORY --prefix '{hostname}-' \
           --keep-hourly=24 --keep-daily=7 --keep-weekly=4 --keep-monthly=6
