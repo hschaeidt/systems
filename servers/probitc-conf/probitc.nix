@@ -10,7 +10,13 @@
     networking = {
       firewall = {
         enable = true;
-        allowedTCPPorts = [ 22 443 ];
+        allowedTCPPorts = [
+          22
+          443
+          # matrix-synapse federation
+          # https://matrix.org/federationtester/api/report?server_name=schaeidt.net
+          8448
+        ];
       };
     };
 
@@ -31,7 +37,10 @@
             locations = {
               # Reverse Proxy for matrix-synapse service
               "/_matrix" = {
-                proxyPass = "http://127.0.0.1:8448";
+                proxyPass = "http://127.0.0.1:8008";
+                extraConfig = ''
+                  proxy_set_header X-Forwarded-For $remote_addr;
+                '';
               };
             };
           };
@@ -64,16 +73,27 @@
         enable = true;
         server_name = "schaeidt.net";
         enable_registration = false;
-        listeners = [
-          {
-            bind_address = "127.0.0.1";
-            port = 8448;
-            resources = [ { compress = true; names = [ "client" "webclient" ]; } { compress = false; names = [ "federation" ]; } ];
-            tls = false;
-            type = "http";
-            x_forwarded = true;
-          }
-        ];
+        # For simplicity do not reverse-proxy the federation port
+        # See https://github.com/matrix-org/synapse#reverse-proxying-the-federation-port
+        listeners = [{
+          port = 8448;
+          bind_address = "";
+          type = "http";
+          tls = true;
+          x_forwarded = false;
+          resources = [
+            { names = ["federation"]; compress = false; }
+          ];
+        } {
+          port = 8008;
+          bind_address = "127.0.0.1";
+          type = "http";
+          tls = false;
+          x_forwarded = true;
+          resources = [
+            { names = ["client" "webclient"]; compress = true; }
+          ];
+        }];
       };
     };
 
