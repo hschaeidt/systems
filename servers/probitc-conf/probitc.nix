@@ -15,6 +15,10 @@
     };
 
     services = {
+      searx = {
+        enable = true;
+      };
+
       nginx = {
         enable = true;
         virtualHosts = {
@@ -28,6 +32,27 @@
               # Reverse Proxy for matrix-synapse service
               "/_matrix" = {
                 proxyPass = "http://127.0.0.1:8448";
+              };
+            };
+          };
+
+          "search.schaeidt.net" = {
+            serverName = "search.schaeidt.net";
+            forceSSL = true;
+            enableSSL = true;
+            enableACME = true;
+
+            locations = {
+              "/" = {
+                extraConfig = ''
+                  proxy_pass http://127.0.0.1:8888;
+                  proxy_set_header        Host                 $host;
+                  proxy_set_header        X-Real-IP            $remote_addr;
+                  proxy_set_header        X-Forwarded-For      $proxy_add_x_forwarded_for;
+                  proxy_set_header        X-Remote-Port        $remote_port;
+                  proxy_set_header        X-Forwarded-Proto    $scheme;
+                  proxy_redirect          off;
+                '';
               };
             };
           };
