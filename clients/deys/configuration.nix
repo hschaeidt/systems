@@ -282,12 +282,13 @@
 
     xserver = {
       startDbusSession = true;
-      enable = true; 
+      enable = true;
       layout = "de";
       xkbOptions = "eurosign:e";
       synaptics = {
         enable = true;
         twoFingerScroll = true;
+        tapButtons = false;
       };
       windowManager = {
         xmonad = {
