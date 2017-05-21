@@ -42,7 +42,7 @@
     enableFontDir = true;
     enableGhostscriptFonts = true;
     fonts = with pkgs; [
-      corefonts
+      corefonts # unfree
       vistafonts
       inconsolata
       terminus_font
@@ -170,7 +170,7 @@
     tig
     fzf
     gist
-    vscode
+    vscode # unfree
 
     # admin tools
     tightvnc
