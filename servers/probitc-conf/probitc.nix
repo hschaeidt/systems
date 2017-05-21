@@ -1,5 +1,6 @@
 {
   network.description = "probitc";
+  network.enableRollback = true;
 
   probitc = { config, pkgs, ... }:
   {
@@ -12,6 +13,7 @@
         enable = true;
         allowedTCPPorts = [
           22
+          80
           443
           # matrix-synapse federation
           # https://matrix.org/federationtester/api/report?server_name=schaeidt.net
@@ -21,6 +23,7 @@
     };
 
     services = {
+      fail2ban.enable = true;
       searx = {
         enable = true;
       };
