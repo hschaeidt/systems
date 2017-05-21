@@ -267,6 +267,13 @@
   services = {
     openssh.enable = true;
     thermald.enable = true;
+    syncthing = {
+      enable = true;
+      openDefaultPorts = true;
+      user = "hschaeidt";
+      group = "users";
+      dataDir = "/home/hschaeidt/.syncthing";
+    };
 
     tlp = {
       enable = true;
