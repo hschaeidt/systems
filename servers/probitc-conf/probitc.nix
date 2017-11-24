@@ -24,21 +24,19 @@
 
     services = {
       fail2ban.enable = true;
-      searx = {
-        enable = true;
-      };
+      searx.enable = true;
 
       nginx = {
         enable = true;
         recommendedTlsSettings = true;
         recommendedOptimisation = true;
         recommendedGzipSettings = true;
+        recommendedProxySettings = true;
 
         virtualHosts = {
           "schaeidt.net" = {
             serverName = "schaeidt.net";
             forceSSL = true;
-            enableSSL = true;
             enableACME = true;
 
             locations = {
@@ -55,7 +53,6 @@
           "search.schaeidt.net" = {
             serverName = "search.schaeidt.net";
             forceSSL = true;
-            enableSSL = true;
             enableACME = true;
 
             locations = {
