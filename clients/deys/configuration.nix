@@ -194,7 +194,7 @@
   # backup-all service collects all user modified data
   # the backup service is started once per hour by a systemd timer declared below
   #
-  # > The root ssh key is registered on the target in the for the backup user.
+  # > The root ssh key is registered on the target machine for the backup user.
   #   @see repo file `servers/probitc-conf/probitc.nix`
   # > Following environment variables are set in the `.config/bash/environment`
   #   export BORG_REPOSITORY='user@host:root@hostname.local'
