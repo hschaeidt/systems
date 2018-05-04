@@ -22,6 +22,54 @@
       };
     };
 
+    # backup-all service collects all user modified data
+    # the backup service is started once per hour by a systemd timer declared below
+    #
+    # > The root ssh key is registered on the target machine for the borg user.
+    # > Following environment variables are set in the `.config/bash/environment`
+    #   export BORG_REPO='user@host:root@hostname.local'
+    #   export BORG_PASSPHRASE='some secret passphrase'
+    #   export SSH_AUTH_SOCK=$XDG_RUNTIME_DIR/ssh-agent
+    # > The backup folder has to be initialized manually
+    #   `borg init user@host:root@hostname.local`
+    # > To start a backup manually `systemctl start backup-all.service`
+    systemd.services.backup-all = {
+      description = "Backing up the system";
+      path = [ pkgs.borgbackup pkgs.openssh ];
+      script = ''
+        # Load environment variables with repository, passphrase, and ssh auth-sock
+        source /root/.config/bash/environment
+
+        # Backup all system customized files including users home folders
+        ${pkgs.borgbackup}/bin/borg create -v --stats \
+          ::'{hostname}-{now:%Y-%m-%d_%H-%M}' \
+          / \
+          --exclude '/dev'                \
+          --exclude '/nix'                \
+          --exclude '/tmp'                \
+          --exclude '/mnt'                \
+          --exclude '/proc'               \
+          --exclude '/sys'                \
+          --exclude-caches                \
+          --exclude '/home/*/.cache/*'    \
+          --exclude '/var/cache/*'        \
+          --exclude '/var/tmp/*'          
+
+        # Use the `prune` subcommand to maintain 24 hourly, 7 daily, 4 weekly and 6 monthly
+        ${pkgs.borgbackup}/bin/borg prune -v --list --prefix '{hostname}-' \
+          --keep-hourly=24 --keep-daily=7 --keep-weekly=4 --keep-monthly=6
+      '';
+    };
+
+    # Timer job for the backup-all service
+    systemd.timers.backup-all = {
+      description = "Backup timer for the system";
+      partOf = [ "backup-all.service" ];
+      wantedBy = [ "timers.target" ];
+      timerConfig.OnCalendar = "hourly";
+    };
+
+
     services = {
       fail2ban.enable = true;
       searx.enable = true;
@@ -102,18 +150,20 @@
     };
 
     users = {
-      extraUsers.backup = {
-        isNormalUser = true;
-        uid = 1001;
-        extraGroups = [ "backup" ];
-        openssh.authorizedKeys.keys = [
-          "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCv+45uC52OlVJlMpaxdNYjVKMJtM6o0O7FEQ8bogqBk3G0oFhaziGkKFfsiQjIfeJDi3ABZgxdD46Eo7OfOjuoiCqHp4P25CaATqOVALvRf8RVGsjN+rIukH0XewywrGH5aC4gfRatzPJWpFJQm8RMJOtuoH9F8TwEQ2g+DMdbYaJBgDynkwkzH1aZojRcK4V9K0rdEPGC8VRB8T3I9OB0lGXvwLvWNtlfpVocbRM7PkHlw5tkGrhrfOWvpyCNTirnLjqefGazaCOERjS1J6PNuPMCITsDTZpTUizroB/MhZGj+jW0Cs/hlBu0UBUncUuIRXmXMMfM009yKBwYgjyYZXWki6Fugtpc4iS1fcPu/8U65S0WkQGcQSJ1h8L1rz+Lx1C2P37OHToLbBfgCQWVACaPN85yuzaWr/bMZ19sEyuk8evAlCiOvFluaTLbKxMZcRWU/zP4/PcANmc03CvPnbUBTMX83YFM/qp+/2yeHuncRBsgg6BIq3ro+/DstG+9LrrfygqVKbiiaLmO1uEGtFUmREqYHazBTyRLlSusdA/C5mSCO24zMYl9WcQ+81E7t7AN5vqmVOrD1+6Kosez34Q5/n0zBACg93yLpxQTU/2vpzth6fU3a37nzM5lVr7HhUs5uiX3mcs76C7A/gJEbGHsAMxZDSnRc5MILoeJBQ== root@deys"
-        ];
+      extraUsers = { 
+        borg = {
+          group = "backup";
+          isNormalUser = true;
+          description = "borg backup user";
+          home = "/var/backup";
+          openssh.authorizedKeys.keys = [
+            "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCv+45uC52OlVJlMpaxdNYjVKMJtM6o0O7FEQ8bogqBk3G0oFhaziGkKFfsiQjIfeJDi3ABZgxdD46Eo7OfOjuoiCqHp4P25CaATqOVALvRf8RVGsjN+rIukH0XewywrGH5aC4gfRatzPJWpFJQm8RMJOtuoH9F8TwEQ2g+DMdbYaJBgDynkwkzH1aZojRcK4V9K0rdEPGC8VRB8T3I9OB0lGXvwLvWNtlfpVocbRM7PkHlw5tkGrhrfOWvpyCNTirnLjqefGazaCOERjS1J6PNuPMCITsDTZpTUizroB/MhZGj+jW0Cs/hlBu0UBUncUuIRXmXMMfM009yKBwYgjyYZXWki6Fugtpc4iS1fcPu/8U65S0WkQGcQSJ1h8L1rz+Lx1C2P37OHToLbBfgCQWVACaPN85yuzaWr/bMZ19sEyuk8evAlCiOvFluaTLbKxMZcRWU/zP4/PcANmc03CvPnbUBTMX83YFM/qp+/2yeHuncRBsgg6BIq3ro+/DstG+9LrrfygqVKbiiaLmO1uEGtFUmREqYHazBTyRLlSusdA/C5mSCO24zMYl9WcQ+81E7t7AN5vqmVOrD1+6Kosez34Q5/n0zBACg93yLpxQTU/2vpzth6fU3a37nzM5lVr7HhUs5uiX3mcs76C7A/gJEbGHsAMxZDSnRc5MILoeJBQ== root@deys"
+          ];
+        };
       };
 
       extraGroups.backup = {
-        gid = 1002;
-        members = [ "backup" ];
+        members = [ "borg" ];
       };
     };
   };
