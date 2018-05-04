@@ -8,6 +8,6 @@
         part / --fstype=ext4 --fsoptions=noatime,nodiratime,discard --label=root --grow --ondisk=sda
     '';
 
-    networking.hostName = "schaeidt.net";
+    networking.hostName = "probitc";
   };
 }
