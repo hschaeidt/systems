@@ -298,9 +298,8 @@
         tapButtons = false;
       };
       windowManager = {
-        xmonad = {
+        i3 = {
           enable = true;
-          enableContribAndExtras = true;
         };
       };
     };
