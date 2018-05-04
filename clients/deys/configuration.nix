@@ -71,7 +71,7 @@
   # Select internationalisation properties.
   i18n = {
     consoleFont = "Lat2-Terminus16";
-    consoleKeyMap = "de";
+    consoleKeyMap = "us";
     defaultLocale = "en_US.UTF-8";
   };
 
@@ -290,7 +290,7 @@
     xserver = {
       startDbusSession = true;
       enable = true;
-      layout = "de";
+      layout = "us";
       xkbOptions = "eurosign:e";
       synaptics = {
         enable = true;
