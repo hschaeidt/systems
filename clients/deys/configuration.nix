@@ -138,6 +138,7 @@
     x11_ssh_askpass
     chromium
     slock
+    keepassx2
 
     # audio / media
     paprefs
