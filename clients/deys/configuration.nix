@@ -188,6 +188,7 @@
     iptables
     pass
     borgbackup
+    profanity
   ];
 
   # backup-all service collects all user modified data
