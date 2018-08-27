@@ -3,6 +3,9 @@
   network.enableRollback = true;
 
   probitc = { config, pkgs, ... }:
+  let
+    nixpkgs-unstable = (import (fetchTarball "https://github.com/nixos/nixpkgs-channels/archive/nixos-unstable.tar.gz")) {};
+  in
   {
     environment.systemPackages = with pkgs; [
       borgbackup
@@ -122,6 +125,7 @@
 
       # Traffic is passed by nginx reverse proxy
       matrix-synapse = {
+        package = nixpkgs-unstable.matrix-synapse;
         enable = true;
         server_name = "schaeidt.net";
         enable_registration = false;
