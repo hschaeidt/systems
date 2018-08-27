@@ -125,6 +125,7 @@
         enable = true;
         server_name = "schaeidt.net";
         enable_registration = false;
+        database_type = "sqlite3";
         # For simplicity do not reverse-proxy the federation port
         # See https://github.com/matrix-org/synapse#reverse-proxying-the-federation-port
         listeners = [{
@@ -166,5 +167,6 @@
         members = [ "borg" ];
       };
     };
+    system.stateVersion = "18.03";
   };
 }
