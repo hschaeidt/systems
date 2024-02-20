@@ -1,0 +1,2 @@
+# Default output directory for `nix build` commands
+/result
