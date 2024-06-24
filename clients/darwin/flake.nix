@@ -11,6 +11,14 @@
 
   outputs = inputs@{ self, nix-darwin, nixpkgs, home-manager }:
   let
+    # The hostname must match the local hostname:
+    # $ hostname
+    hostname = "yBookPro";
+
+    # The username must match the local username:
+    # $ whoami
+    user = "hschaeidt";
+  in let
     configuration = { pkgs, ... }: {
       # List packages installed in system profile. To search by name, run:
       # $ nix-env -qaP | grep wget
@@ -27,7 +35,6 @@
 
       # Create /etc/zshrc that loads the nix-darwin environment.
       programs.zsh.enable = true;  # default shell on catalina
-      # programs.fish.enable = true;
 
       # Set Git commit hash for darwin-version.
       system.configurationRevision = self.rev or self.dirtyRev or null;
@@ -39,15 +46,15 @@
       # The platform the configuration will be used on.
       nixpkgs.hostPlatform = "aarch64-darwin";
 
-      users.users.hschaeidt = {
-        home = "/Users/hschaeidt";
+      users.users."${user}"= {
+        home = "/Users/${user}";
       };
     };
 
     homeNix = { config, pkgs, ... }: {
-      home.username = "hschaeidt";
-      home.homeDirectory = "/Users/hschaeidt";
-      home.stateVersion = "23.11";
+      home.username = "${user}";
+      home.homeDirectory = "/Users/${user}";
+      home.stateVersion = "24.05";
     };
   in
   {
@@ -55,7 +62,7 @@
     # $ darwin-rebuild build --flake .#yBookPro
     # or build and switch using:
     # $ darwin-rebuild switch --flake ~/.config/nix-darwin
-    darwinConfigurations."yBookPro" = nix-darwin.lib.darwinSystem {
+    darwinConfigurations."${hostname}" = nix-darwin.lib.darwinSystem {
       modules = [ 
         configuration
         home-manager.darwinModules.home-manager
@@ -64,12 +71,12 @@
           home-manager.useUserPackages = true;
           # The username must match the local username:
           # $ whoami
-          home-manager.users.hschaeidt = homeNix;
+          home-manager.users."${user}" = homeNix;
         }
       ];
     };
 
     # Expose the package set, including overlays, for convenience.
-    darwinPackages = self.darwinConfigurations."yBookPro".pkgs;
+    darwinPackages = self.darwinConfigurations."${hostname}".pkgs;
   };
 }
